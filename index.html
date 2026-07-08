@@ -431,6 +431,7 @@
     font-size:.85rem;color:var(--ink-faint);
   }
   .footer-inner .wordmark{font-size:1.15rem;color:var(--ink)}
+  .footer-inner .wordmark .dot{color:var(--accent);font-weight:800}
 
   /* reveal on scroll */
   .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
@@ -463,8 +464,8 @@
     <p class="hero-title">Email marketing that turns one-time buyers into repeat customers — strategy, automation and execution, owned end-to-end.</p>
     <div class="hero-stats">
       <div><strong>10+ years</strong><span>D2C &amp; B2B</span></div>
-      <div><strong>9 years</strong><span>hands-on Klaviyo</span></div>
-      <div><strong>7+ years</strong><span>remote, across time zones</span></div>
+      <div><strong>7+ years</strong><span>remote</span></div>
+      <div><strong>AI-enhanced</strong><span>daily workflow</span></div>
     </div>
   </div>
 </header>
@@ -543,7 +544,7 @@
 
     <div class="platforms reveal">
       <div class="platform">
-        <span class="p-label">Core platform · 9 yrs</span>
+        <span class="p-label">Core platform</span>
         <h3>Klaviyo</h3>
         <p>Flows, campaigns, segmentation, A/B testing, analytics, Composer, Customer Hub, CDP.</p>
       </div>
@@ -571,6 +572,8 @@
           <span class="chip">Kit</span>
           <span class="chip">Mailchimp</span>
           <span class="chip">Salesloft</span>
+          <span class="chip">Shopify</span>
+          <span class="chip">WooCommerce</span>
           <span class="chip">Google Analytics</span>
           <span class="chip">NeverBounce</span>
           <span class="chip">WordPress</span>
@@ -584,10 +587,6 @@
           <span class="chip">Adobe Lightroom</span>
           <span class="chip">Canva</span>
           <span class="chip">CapCut</span>
-          <span class="chip">Photography</span>
-          <span class="chip">Content creation</span>
-          <span class="chip">Copywriting</span>
-          <span class="chip">Storytelling</span>
         </div>
       </div>
       <div class="tool-group">
@@ -723,7 +722,7 @@
       <h2>Let's work <span class="serif">together</span></h2>
       <p>Share a few details about your business and where you'd like help — I'll be in touch to talk through your project.</p>
       <div class="contact-links">
-        <a href="mailto:cazucr@gmail.com"><span class="ico">@</span> cazucr@gmail.com</a>
+        <a href="mailto:hello@carozu.com"><span class="ico">@</span> hello@carozu.com</a>
         <a href="https://linkedin.com/in/carolinazu/" target="_blank" rel="noopener"><span class="ico">in</span> linkedin.com/in/carolinazu</a>
       </div>
       <div class="langs">
@@ -733,7 +732,7 @@
       </div>
     </div>
 
-    <form class="reveal" id="contact-form">
+    <form class="reveal" id="contact-form" action="https://formspree.io/f/maqgzpje" method="POST">
       <div class="form-row">
         <div class="field">
           <label for="f-name">Name</label>
@@ -764,33 +763,57 @@
         <textarea id="f-msg" name="message" required placeholder="Your platform, list size, and where you'd like help…"></textarea>
       </div>
       <button class="submit" type="submit">Send message →</button>
-      <p class="form-note">Opens your email app with everything pre-filled.</p>
+      <p class="form-note" id="form-status">I'll get back to you about your project soon.</p>
     </form>
   </div>
 </section>
 
 <footer>
   <div class="footer-inner">
-    <span class="wordmark"><span class="serif">caro</span><b>zú</b></span>
+    <span class="wordmark"><span class="serif">caro</span><b>zú</b><span class="dot">.</span></span>
     <span>Carolina Zúñiga · Lifecycle, Retention &amp; Email Marketing · Remote worldwide</span>
     <span>© 2026</span>
   </div>
 </footer>
 
 <script>
-  // Contact form → pre-filled email (no backend needed; swap action for Formspree/Netlify later)
-  document.getElementById('contact-form').addEventListener('submit', function(e){
+  // Contact form — submits via Formspree (replace YOUR_FORM_ID in the form action).
+  // Until the ID is set, it falls back to opening the visitor's email app.
+  const form = document.getElementById('contact-form');
+  const statusEl = document.getElementById('form-status');
+  form.addEventListener('submit', async function(e){
     e.preventDefault();
-    const f = new FormData(this);
-    const subject = encodeURIComponent('Project inquiry — ' + (f.get('company') || f.get('name')));
-    const body = encodeURIComponent(
-      'Name: ' + f.get('name') + '\n' +
-      'Email: ' + f.get('email') + '\n' +
-      'Company: ' + (f.get('company') || '—') + '\n' +
-      'Needs: ' + f.get('need') + '\n\n' +
-      f.get('message')
-    );
-    window.location.href = 'mailto:cazucr@gmail.com?subject=' + subject + '&body=' + body;
+    const f = new FormData(form);
+
+    if (form.action.includes('YOUR_FORM_ID')) {
+      // fallback: pre-filled email
+      const subject = encodeURIComponent('Project inquiry — ' + (f.get('company') || f.get('name')));
+      const body = encodeURIComponent(
+        'Name: ' + f.get('name') + '\n' +
+        'Email: ' + f.get('email') + '\n' +
+        'Company: ' + (f.get('company') || '—') + '\n' +
+        'Needs: ' + f.get('need') + '\n\n' +
+        f.get('message')
+      );
+      window.location.href = 'mailto:hello@carozu.com?subject=' + subject + '&body=' + body;
+      return;
+    }
+
+    const btn = form.querySelector('button.submit');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST', body: f, headers: {'Accept': 'application/json'}
+      });
+      if (res.ok) {
+        form.reset();
+        btn.textContent = 'Sent ✓';
+        statusEl.textContent = "Thank you! Your message is in my inbox — I'll be in touch soon.";
+      } else { throw new Error(); }
+    } catch (err) {
+      btn.disabled = false; btn.textContent = 'Send message →';
+      statusEl.textContent = "Something went wrong — please email me directly instead.";
+    }
   });
 
   // Scroll reveal
